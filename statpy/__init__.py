@@ -198,10 +198,3 @@ class dataset(list):
 
     def copy(self) -> 'dataset':
         return dataset([x for x in self])
-
-
-a = dataset([1, 2, 3, 4, 5])
-a.sample = True
-print(a)
-
-import statpy
