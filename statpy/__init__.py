@@ -1,62 +1,42 @@
 class dataset(list):
     from typing import Union
 
-    class __sample_class:
-        class sample:
-            from typing import Union
+    class __sample:
+        from typing import Union
 
-            def __init__(self,  val: bool, obj: 'dataset'):
-                self.val = val
-                self.obj = obj
-
-            def __call__(self, percent: Union[all, float] = 0.25):
-                if percent == all:
-                    percent = 1
-                if percent > 1:
-                    percent /= len(self.obj)
-                if percent > 1:
-                    raise IndexError(f"Your dataset only has {len(self.obj)} items and therefore"
-                                     f" does not have {percent * len(self.obj)} items to sample")
-                sample_length = round(percent * len(self.obj))
-                data = self.obj.copy()
-                lst = ['SAMPLE']
-                for _ in range(sample_length):
-                    i = self.obj.randint(0, len(data) - 1)
-                    lst.append(data.pop(i))
-                return dataset(lst)
-
-            def __repr__(self):
-                return self.val
-
-            def __str__(self):
-                return str(self.val)
-
-            def __bool__(self):
-                return self.val
-
-        def __init__(self, obj):
+        def __init__(self,  val: bool, obj: 'dataset'):
+            self.val = val
             self.obj = obj
 
-        def __get__(self, instance, owner):
-            return self.sample(instance._dataset__is_sample, self.obj)
+        def __call__(self, percent: Union[all, float] = 0.25):
+            if percent == all:
+                percent = 1
+            if percent > 1:
+                percent /= len(self.obj)
+            if percent > 1:
+                raise IndexError(f"Your dataset only has {len(self.obj)} items and therefore"
+                                 f" does not have {percent * len(self.obj)} items to sample")
+            sample_length = round(percent * len(self.obj))
+            data = self.obj.copy()
+            lst = ['SAMPLE']
+            for _ in range(sample_length):
+                i = self.obj.randint(0, len(data) - 1)
+                lst.append(data.pop(i))
+            return dataset(lst)
 
-        def __set__(self, instance, value: bool):
-            if type(value) == self.sample:
-                instance._dataset__is_sample = value.val
-                return
-            if value not in [True, False]:
-                raise TypeError("sample must be either True or False")
-            instance._dataset__is_sample = value
+        def __repr__(self):
+            return self.val
 
-    def __new__(cls, __iterable=None):
-        self = super().__new__(cls)
-        cls.sample = cls.__sample_class(self)
-        cls.__is_sample = False
-        return self
+        def __str__(self):
+            return str(self.val)
+
+        def __bool__(self):
+            return self.val
 
     def __init__(self, __iterable=None):
         from random import randint
         self.randint = randint
+        self.__is_sample = False
         if __iterable is None:
             super().__init__()
             return
@@ -65,6 +45,19 @@ class dataset(list):
             __iterable.pop(0)
             self.__is_sample = True
         super().__init__(__iterable)
+
+    @property
+    def sample(self):
+        return self.__sample(self.__is_sample, self)
+
+    @sample.setter
+    def sample(self, value):
+        if type(value) == self.__sample:
+            self.__is_sample = value.val
+            return
+        if value not in [True, False]:
+            raise TypeError("sample must be either True or False")
+        self.__is_sample = value
 
     def isample(self, percent: Union[all, float] = 0.25):
         """This is an in place sample"""
