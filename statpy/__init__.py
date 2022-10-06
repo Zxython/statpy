@@ -635,29 +635,3 @@ class regression:
 
     def __call__(self, x):
         return self.function(x)
-
-    
-def rainbow(string: str, cycles: float = 1, starting_degree: float = 0, lengths=None):
-    from numpy import linspace
-    if lengths is not None:
-        cycles = len(string) / lengths
-    str_temp = ''
-    for i, char in zip(linspace(starting_degree, 360*cycles-10+starting_degree, len(string)), string):
-        r, g, b = [round(val) for val in rgb(i, 1, 1)]
-        str_temp += f'\x1b[38;2;{r};{g};{b}m{char}'
-    str_temp += '\x1b[0m'
-    return str_temp
-
-
-def rgb(h, s, v):
-    h %= 360
-    c = v * s
-    x = c * (1 - abs(((h / 60) % 2)-1))
-    m = v - c
-    if h <= 60: r=c; g=x; b=0
-    elif 60 < h <= 120: r=x; g=c; b=0
-    elif 120 < h <= 180: r=0; g=c; b=x
-    elif 180 < h <= 240: r=0; g=x; b=c
-    elif 240 < h <= 300: r=x; g=0; b=c
-    else: r=c; g=0; b=x
-    return (r+m)*255, (g+m)*255, (b+m)*255
