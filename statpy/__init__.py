@@ -127,6 +127,11 @@ class dataset(list, metaclass=__meta):
                     pass
         return dataset(lst)
 
+    def extend(self, __iterable):
+        if isinstance(__iterable, dataset):
+            super().extend(dataset([x for x in __iterable]))
+        super().extend(__iterable)
+
     @classmethod
     def __open_csv(cls, filename, header, delimiter=','):
         index = []
@@ -262,6 +267,10 @@ class dataset(list, metaclass=__meta):
             labels.append(__object)
             self.labels = tuple(labels)
             for i, vec in enumerate(self):
+                if not isinstance(vec, Vector):
+                    for j, val in enumerate(self):
+                        self[j] = Vector(val)
+                    vec = Vector(vec)
                 vec = list(vec.vector)
                 vec.append(None)
                 self[i].vector = tuple(vec)
@@ -271,6 +280,9 @@ class dataset(list, metaclass=__meta):
                 self.append(__set_label)
             index = self.labels.index(__set_label)
             for i in range(len(self)):
+                if not isinstance(self[i], Vector):
+                    for j, val in enumerate(self):
+                        self[j] = Vector(val)
                 if self[i][index] is None:
                     vec = list(self[i])
                     vec[index] = __object
