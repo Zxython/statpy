@@ -154,6 +154,8 @@ class dataset(list, metaclass=__meta):
                             labels.append(val)
                             continue
                         index.append(line.index(val))
+                        while val in labels:
+                            labels.remove(val)
                     if len(index) > 1:
                         do_vector = True
                 else:
@@ -189,7 +191,7 @@ class dataset(list, metaclass=__meta):
                         except ValueError:
                             pass
             file.close()
-        data = dataset(data, labels)
+        data = dataset(data, list(set(labels)))
         return data
 
     @property
