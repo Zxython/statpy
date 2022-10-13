@@ -151,7 +151,8 @@ class dataset(list, metaclass=__meta):
                         continue
                     for val in header:
                         if val not in line:
-                            labels.append(val)
+                            if val not in labels:
+                                labels.append(val)
                             continue
                         index.append(line.index(val))
                         while val in labels:
@@ -191,7 +192,7 @@ class dataset(list, metaclass=__meta):
                         except ValueError:
                             pass
             file.close()
-        data = dataset(data, list(set(labels)))
+        data = dataset(data, labels)
         return data
 
     @property
