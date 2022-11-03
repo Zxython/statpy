@@ -1,6 +1,6 @@
 from setuptools import setup
 setup(name='statpy',
-      version='0.0.4',
+      version='0.0.3',
       description='Adds statistical stuff',
       url='https://github.com/Zxython/statpy/',
       author='Jerry Gillian',
