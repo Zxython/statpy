@@ -103,12 +103,12 @@ class dataset(list, metaclass=__meta):
         self.extend(lst)
 
     @classmethod
-    def open(cls, filename, *headers: Union[str, all]) -> 'dataset':
+    def open(cls, filename, *headers: Union[str, all], **constants) -> 'dataset':
         file_type = filename.split('.')[-1]
         if file_type == 'csv':
-            return cls.__open_csv(filename, headers)
+            return cls.__open_csv(filename, headers, constants)
         if file_type == 'tsv':
-            return cls.__open_csv(filename, headers, delimiter='\t')
+            return cls.__open_csv(filename, headers, constants, delimiter='\t')
         return cls.__open_txt(filename)
 
     @classmethod
@@ -133,7 +133,7 @@ class dataset(list, metaclass=__meta):
         super().extend(__iterable)
 
     @classmethod
-    def __open_csv(cls, filename, header, delimiter=','):
+    def __open_csv(cls, filename, header, constants=None, delimiter=','):
         index = []
         data = []
         labels = []
@@ -157,7 +157,10 @@ class dataset(list, metaclass=__meta):
                         index.append(line.index(val))
                         while val in labels:
                             labels.remove(val)
-                    if len(index) > 1:
+                        if constants is not None:
+                            for var_name in constants.keys():
+                                labels.append(var_name)
+                    if len(index) > 1 or constants is not None:
                         do_vector = True
                 else:
                     good = True
@@ -179,6 +182,9 @@ class dataset(list, metaclass=__meta):
                             except ValueError:
                                 break
                         else:
+                            if constants is not None:
+                                for var in constants.values():
+                                    temp.append(var)
                             data.append(Vector(*temp))
                         continue
                     for i, val in enumerate(index):
@@ -467,8 +473,9 @@ class regression:
         if y_intercept < 0:
             sign = '-'
         self.formula = f"y={slope}x{sign}{abs(y_intercept)}"
+        self.coefs = [slope, y_intercept]
         self.type = "linear"
-        return self.function
+        return self
 
     def fit_quadratic(self):
         import numpy as np
@@ -489,8 +496,9 @@ class regression:
         self.function = lambda x: a * x ** 2 + b * x + c
         self.stdev = (1 / len(self) * sum([(vec.y - self.function(vec.x)) ** 2 for vec in self.points])) ** 0.5
         self.formula = f"y={a}x^2+{b}x+{c}"
+        self.coefs = [a, b, c]
         self.type = "quadratic"
-        return self.function
+        return self
 
     def fit_polynomial(self, degree=None, acceptable_uncertainty=0.0001, starting_degree=0, minimum_uncertainty=None):
         import numpy as np
@@ -518,7 +526,7 @@ class regression:
             if degree is not None:
                 break
         self.type = "polynomial"
-        return self.function
+        return self
 
     def fit_exp(self, use_raw=False):
         import numpy as np
@@ -542,7 +550,7 @@ class regression:
         else:
             self.formula = f"{a}e^({b}x)"
             return True
-        return self.function
+        return self
 
     def fit(self):
         results = []
@@ -575,6 +583,7 @@ class regression:
         self.formula = results[0]["formula"]
         self.r_squared = results[0]["r_squared"]
         self.type = results[0]["type"]
+        return self
 
     def next(self):
         if self.sorted_equations is None:
